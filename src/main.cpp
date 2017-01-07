@@ -26,31 +26,21 @@ int main(int argc, char **argv)
     points_Trajectoire_pub = n.advertise<algo_trajectoire::points_trajectoire>("pointDeTrajectoire", 100);
     ros::Subscriber info_algo_sub = n.subscribe("info_A*", 100, trouverTrajectoire);
     ros::spin();
-    ros::Rate loop_rate(10);
-    int count = 0;
-    while (ros::ok())
-    {
-    std_msgs::String msg;
-
-    std::stringstream ss;
-    ss << "hello world " << count;
-    msg.data = ss.str();
-
-    ROS_INFO("%s", msg.data.c_str());
-
-    //chatter_pub.publish(msg);
-
-    ros::spinOnce();
-
-    loop_rate.sleep();
-    ++count;
-
-    }
-
     return 0;
 }
 
 void trouverTrajectoire(const algo_trajectoire::info_algo& msg)
 {
     trajectoire=path->aStar(msg.x_dep,msg.y_dep,msg.x_dest,msg.y_dest,msg.angle);
+    algo_trajectoire::points_trajectoire result;
+    algo_trajectoire::point pointCourant;
+    for(unsigned int i=0; i<trajectoire.size(); ++i)
+    {
+       pair<int,int>* ppoint= trajectoire[i];
+       pointCourant.x=ppoint->first;
+       pointCourant.y=ppoint->second;
+       result.points_trajectoire.push_back(pointCourant);
+    }
+
+    points_Trajectoire_pub.publish(result);
 }
